@@ -1,7 +1,8 @@
 {
   "name": "token-setup",
-  "id": "token-setup-plugin",
+  "id": "1615009680241482416",
   "api": "1.0.0",
+  "documentAccess": "dynamic-page",
   "main": "dist/main.js",
   "ui": "dist/ui.html",
   "editorType": ["figma"],
