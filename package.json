@@ -1,0 +1,17 @@
+{
+  "name": "figma-token-scaffold",
+  "version": "1.0.0",
+  "description": "Build token collection skeleton structures quickly",
+  "scripts": {
+    "build": "npm run build:main && npm run build:ui",
+    "build:main": "esbuild src/main.ts --bundle --outfile=dist/main.js --target=es2015",
+    "build:ui": "mkdir -p dist && cp src/ui.html dist/ui.html",
+    "watch": "npm run build:ui && esbuild src/main.ts --bundle --outfile=dist/main.js --target=es2015 --watch"
+  },
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.123.0",
+    "esbuild": "^0.27.4",
+    "typescript": "^5.9.3"
+  },
+  "license": "ISC"
+}

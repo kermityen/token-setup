@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<style>
+  :root {
+    --bg: #fff;
+    --bg-secondary: #f7f7f8;
+    --bg-hover: #efefef;
+    --border: #e5e7eb;
+    --text: #1e1e1e;
+    --text-secondary: #6b7280;
+    --accent: #0066ff;
+    --accent-hover: #0052cc;
+    --danger: #e74c3c;
+    --dot-base: #0066ff;
+    --dot-state: #9ca3af;
+    --dot-special: #d97706;
+    --radius: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Inter, -apple-system, system-ui, sans-serif;
+    font-size: 11px;
+    color: var(--text);
+    background: var(--bg);
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Top Bar ───────────────────────── */
+  .top-bar {
+    padding: 10px 16px;
+    border-bottom: 0.5px solid var(--border);
+    flex-shrink: 0;
+  }
+  .top-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .top-bar-row + .top-bar-row {
+    margin-top: 8px;
+  }
+  .top-bar h1 {
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .top-bar .collection-input {
+    flex: 1;
+    padding: 5px 8px;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 11px;
+    font-family: inherit;
+    color: var(--text);
+    background: var(--bg);
+    outline: none;
+    min-width: 0;
+  }
+  .top-bar .collection-input:focus { border-color: var(--accent); }
+  .modes-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+  .modes-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    flex: 1;
+  }
+  .mode-chip {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 3px 7px; border-radius: var(--radius);
+    background: var(--bg-secondary); border: 0.5px solid var(--border);
+    font-size: 10px;
+  }
+  .mode-chip .mode-name {
+    border: none; background: none; font-size: 10px;
+    font-family: inherit; color: var(--text);
+    width: auto; min-width: 32px; max-width: 80px;
+    padding: 0; outline: none; cursor: text;
+  }
+  .mode-chip .mode-remove {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-secondary); font-size: 12px; line-height: 1;
+    padding: 0;
+  }
+  .mode-chip .mode-remove:hover { color: var(--danger); }
+  .mode-add {
+    background: none; border: 1px dashed var(--border);
+    border-radius: var(--radius); padding: 3px 7px; cursor: pointer;
+    font-size: 10px; color: var(--text-secondary);
+  }
+  .mode-add:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Main Layout ───────────────────── */
+  .main-layout {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* ── Left Panel ────────────────────── */
+  .left-panel {
+    width: 300px;
+    min-width: 300px;
+    border-right: 0.5px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .shortcuts {
+    padding: 6px 10px;
+    border-bottom: 0.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .shortcut-btn {
+    background: var(--bg-secondary); border: 0.5px solid var(--border);
+    border-radius: var(--radius); padding: 3px 8px; cursor: pointer;
+    font-size: 9px; font-weight: 600; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .shortcut-btn:hover { background: var(--bg-hover); color: var(--text); }
+
+  .group-list {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .group-list::-webkit-scrollbar { width: 3px; }
+  .group-list::-webkit-scrollbar-thumb { background: rgba(0,0,0,.12); border-radius: 2px; }
+
+  .group-item { border-bottom: 0.5px solid var(--border); }
+  .group-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+  .group-header:hover { background: var(--bg-secondary); }
+  .group-header input[type="checkbox"] {
+    margin: 0; cursor: pointer;
+    accent-color: var(--accent);
+  }
+  .group-name {
+    font-weight: 600; font-size: 11px;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .group-token-count {
+    font-size: 10px; color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+  .expand-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 9px; color: var(--text-secondary);
+    padding: 2px; transition: transform 0.15s;
+  }
+  .expand-btn.open { transform: rotate(90deg); }
+
+  /* ── Group Config Panel ────────────── */
+  .group-config {
+    padding: 5px 10px 8px 30px;
+    background: var(--bg-secondary);
+    border-top: 0.5px solid var(--border);
+    display: none;
+  }
+  .group-config.open { display: block; }
+  .config-row {
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: 6px; margin-bottom: 8px;
+  }
+  .config-row:last-child { margin-bottom: 0; }
+  .config-row-indent { margin-top: -4px; }
+  .config-label {
+    font-size: 9px; font-weight: 600; color: var(--text-secondary);
+    min-width: 36px; text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .stepper {
+    display: inline-flex; align-items: center;
+    border: 0.5px solid var(--border); border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .stepper button {
+    background: var(--bg); border: none; cursor: pointer;
+    width: 18px; height: 20px; font-size: 11px;
+    color: var(--text); display: flex; align-items: center;
+    justify-content: center;
+  }
+  .stepper button:hover { background: var(--bg-hover); }
+  .stepper .stepper-val {
+    width: 22px; text-align: center; font-size: 10px;
+    font-weight: 600; border-left: 0.5px solid var(--border);
+    border-right: 0.5px solid var(--border);
+    height: 20px; line-height: 20px;
+  }
+  .config-check {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 10px; cursor: pointer;
+  }
+  .config-check input {
+    margin: 0; cursor: pointer;
+    accent-color: var(--accent);
+  }
+
+  /* Gradient */
+  .gradient-rows { margin-top: 3px; }
+  .gradient-row {
+    display: flex; align-items: center; gap: 5px;
+    margin-bottom: 2px; font-size: 10px;
+  }
+  .gradient-row select {
+    font-size: 10px; padding: 3px 4px; border: 0.5px solid var(--border);
+    border-radius: var(--radius); background: var(--bg); height: 20px;
+  }
+
+  /* ── Right Panel (Preview) ─────────── */
+  .right-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .preview-header {
+    padding: 8px 14px;
+    border-bottom: 0.5px solid var(--border);
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .preview-header .legend {
+    display: flex; gap: 10px; font-weight: 400;
+    text-transform: none; letter-spacing: 0;
+  }
+  .legend-item {
+    display: inline-flex; align-items: center; gap: 3px;
+  }
+  .preview-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 14px;
+  }
+  .preview-scroll::-webkit-scrollbar { width: 3px; }
+  .preview-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,.12); border-radius: 2px; }
+
+  .preview-group {
+    margin-bottom: 10px;
+  }
+  .preview-group-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 3px;
+    padding-bottom: 3px;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .preview-tokens {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1px 0;
+  }
+  .token-tag {
+    font-size: 10px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 0;
+    width: 100%;
+    font-family: 'SF Mono', 'Fira Code', 'Menlo', monospace;
+    line-height: 1.5;
+  }
+  .token-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .token-dot.base { background: var(--dot-base); }
+  .token-dot.state { background: var(--dot-state); }
+  .token-dot.special { background: var(--dot-special); }
+
+  .preview-empty {
+    color: var(--text-secondary);
+    font-size: 11px;
+    text-align: center;
+    padding: 40px 20px;
+    line-height: 1.6;
+  }
+
+  /* ── Bottom Bar ────────────────────── */
+  .bottom-bar {
+    padding: 8px 16px;
+    border-top: 0.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .total-count {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .bottom-actions {
+    display: flex; gap: 6px;
+  }
+  .btn {
+    padding: 6px 14px; border: none; border-radius: var(--radius);
+    font-size: 11px; font-weight: 600; cursor: pointer;
+  }
+  .btn-secondary {
+    background: var(--bg-secondary); color: var(--text);
+    border: 0.5px solid var(--border);
+  }
+  .btn-secondary:hover { background: var(--bg-hover); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── JSON Modal ────────────────────── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.4);
+    display: none; align-items: center;
+    justify-content: center; z-index: 100;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg); border-radius: var(--radius);
+    width: 92%; max-height: 88%; display: flex;
+    flex-direction: column; overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,.2);
+  }
+  .modal-header {
+    padding: 10px 14px;
+    border-bottom: 0.5px solid var(--border);
+    display: flex; align-items: center;
+    justify-content: space-between;
+  }
+  .modal-header h2 { font-size: 12px; font-weight: 700; }
+  .modal-close {
+    background: none; border: none; cursor: pointer;
+    font-size: 16px; color: var(--text-secondary);
+  }
+  .modal-body {
+    flex: 1; overflow: auto; padding: 10px 14px;
+  }
+  .modal-body pre {
+    font-size: 10px; font-family: 'SF Mono', 'Fira Code', 'Menlo', monospace;
+    white-space: pre-wrap; word-break: break-all;
+    line-height: 1.5;
+  }
+  .modal-footer {
+    padding: 8px 14px;
+    border-top: 0.5px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 6px;
+  }
+
+  /* ── Toast ─────────────────────────── */
+  .toast {
+    position: fixed; bottom: 54px; left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 14px; border-radius: var(--radius);
+    font-size: 11px; font-weight: 500;
+    z-index: 200; display: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  }
+  .toast.success { display: block; background: #e8f8ef; color: #1a7f4b; }
+  .toast.error { display: block; background: #fdecea; color: #c0392b; }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="top-bar">
+  <div class="top-bar-row">
+    <h1>token-setup</h1>
+    <input class="collection-input" id="collectionName" type="text" value="color usage" placeholder="Collection name" />
+  </div>
+  <div class="top-bar-row">
+    <span class="modes-label">Modes</span>
+    <div class="modes-bar" id="modesList"></div>
+  </div>
+</div>
+
+<!-- Main Layout -->
+<div class="main-layout">
+  <!-- Left: Groups -->
+  <div class="left-panel">
+    <div class="shortcuts">
+      <button class="shortcut-btn" id="btnAll">All</button>
+      <button class="shortcut-btn" id="btnNone">None</button>
+      <button class="shortcut-btn" id="btnCore">Core</button>
+    </div>
+    <div class="group-list" id="groupList"></div>
+  </div>
+
+  <!-- Right: Preview -->
+  <div class="right-panel">
+    <div class="preview-header">
+      <span>Preview</span>
+      <div class="legend">
+        <span class="legend-item"><span class="token-dot base"></span> base</span>
+        <span class="legend-item"><span class="token-dot state"></span> state</span>
+        <span class="legend-item"><span class="token-dot special"></span> special</span>
+      </div>
+    </div>
+    <div class="preview-scroll" id="previewPanel"></div>
+  </div>
+</div>
+
+<!-- Bottom Bar -->
+<div class="bottom-bar">
+  <span class="total-count" id="totalCount">0 tokens</span>
+  <div class="bottom-actions">
+    <button class="btn btn-secondary" id="btnJson">Show JSON</button>
+    <button class="btn btn-primary" id="btnSync">Sync to Figma</button>
+  </div>
+</div>
+
+<!-- JSON Modal -->
+<div class="modal-overlay" id="jsonModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Generated Tokens</h2>
+      <button class="modal-close" id="jsonClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <pre id="jsonContent"></pre>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btnCopy">Copy</button>
+      <button class="btn btn-secondary" id="jsonCloseBtn">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ────────────────────────────────────────────────────
+// Group Definitions
+// ────────────────────────────────────────────────────
+
+var CONFIG_VERSION = 2;
+var CORE_GROUPS = ['background','surface','text','icon','button','border','support'];
+
+var GROUP_DEFS = [
+  {
+    id: 'background', label: 'Background', type: 'background',
+    defaults: { inverse: true, hovered: false, pressed: false, selected: false },
+    configDef: [
+      { key: 'inverse', kind: 'check', label: 'inverse' },
+      { key: 'hovered', kind: 'check', label: 'hover' },
+      { key: 'pressed', kind: 'check', label: 'pressed' },
+      { key: 'selected', kind: 'check', label: 'selected' }
+    ]
+  },
+  {
+    id: 'surface', label: 'Surface', type: 'layered',
+    defaults: { levels: 3, bg: false, hovered: true, pressed: true, selected: true, inverse: true },
+    configDef: [
+      { key: 'levels', kind: 'stepper', label: 'Levels', min: 1, max: 8 },
+      { key: 'bg', kind: 'check', label: 'bg' },
+      { key: 'inverse', kind: 'check', label: 'inverse' },
+      { key: 'hovered', kind: 'check', label: 'hover', group: 'States' },
+      { key: 'pressed', kind: 'check', label: 'pressed', group: 'States' },
+      { key: 'selected', kind: 'check', label: 'selected', group: 'States' }
+    ]
+  },
+  {
+    id: 'surface-accent', label: 'Surface Accent', type: 'bg-only',
+    defaults: { levels: 2 },
+    configDef: [
+      { key: 'levels', kind: 'stepper', label: 'Levels', min: 1, max: 6 }
+    ]
+  },
+  {
+    id: 'text', label: 'Text', type: 'text',
+    defaults: { levels: 3, onColor: true, placeholder: true, disable: true, inverse: true, semantic: true },
+    configDef: [
+      { key: 'levels', kind: 'stepper', label: 'Levels', min: 1, max: 6 },
+      { key: 'onColor', kind: 'check', label: 'on-color' },
+      { key: 'placeholder', kind: 'check', label: 'placeholder' },
+      { key: 'disable', kind: 'check', label: 'disable' },
+      { key: 'inverse', kind: 'check', label: 'inverse' },
+      { key: 'semantic', kind: 'check', label: 'semantic' }
+    ]
+  },
+  {
+    id: 'link', label: 'Link', type: 'link',
+    defaults: { levels: 1, hovered: true, active: true, visited: true, inverse: true },
+    configDef: [
+      { key: 'levels', kind: 'stepper', label: 'Levels', min: 1, max: 4 },
+      { key: 'hovered', kind: 'check', label: 'hover', group: 'States' },
+      { key: 'active', kind: 'check', label: 'active', group: 'States' },
+      { key: 'visited', kind: 'check', label: 'visited', group: 'States' },
+      { key: 'inverse', kind: 'check', label: 'inverse' }
+    ]
+  },
+  {
+    id: 'icon', label: 'Icon', type: 'icon',
+    defaults: { levels: 2, onColor: true, interactive: true, inverse: true, disable: true },
+    configDef: [
+      { key: 'levels', kind: 'stepper', label: 'Levels', min: 1, max: 6 },
+      { key: 'onColor', kind: 'check', label: 'on-color' },
+      { key: 'interactive', kind: 'check', label: 'interactive' },
+      { key: 'inverse', kind: 'check', label: 'inverse' },
+      { key: 'disable', kind: 'check', label: 'disable' }
+    ]
+  },
+  {
+    id: 'button', label: 'Button', type: 'button',
+    defaults: { levels: 2, hovered: true, pressed: true, disabled: true, ghost: false },
+    configDef: [
+      { key: 'levels', kind: 'stepper', label: 'Levels', min: 1, max: 6 },
+      { key: 'hovered', kind: 'check', label: 'hover', group: 'States' },
+      { key: 'pressed', kind: 'check', label: 'pressed', group: 'States' },
+      { key: 'disabled', kind: 'check', label: 'disabled' },
+      { key: 'ghost', kind: 'check', label: 'ghost' }
+    ]
+  },
+  {
+    id: 'field', label: 'Field', type: 'layered',
+    defaults: { levels: 2, hovered: true, pressed: true, disabled: true },
+    configDef: [
+      { key: 'levels', kind: 'stepper', label: 'Levels', min: 1, max: 6 },
+      { key: 'hovered', kind: 'check', label: 'hover', group: 'States' },
+      { key: 'pressed', kind: 'check', label: 'pressed', group: 'States' },
+      { key: 'disabled', kind: 'check', label: 'disabled', group: 'States' }
+    ]
+  },
+  {
+    id: 'border', label: 'Border', type: 'layered',
+    defaults: { levels: 3, hovered: true, pressed: true, disabled: true, interactive: false, borderDisabled: false },
+    configDef: [
+      { key: 'levels', kind: 'stepper', label: 'Levels', min: 1, max: 8 },
+      { key: 'hovered', kind: 'check', label: 'hover', group: 'States' },
+      { key: 'pressed', kind: 'check', label: 'pressed', group: 'States' },
+      { key: 'disabled', kind: 'check', label: 'disabled', group: 'States' },
+      { key: 'interactive', kind: 'check', label: 'interactive' },
+      { key: 'borderDisabled', kind: 'check', label: 'disabled (special)' }
+    ]
+  },
+  {
+    id: 'divider', label: 'Divider', type: 'bg-only',
+    defaults: { levels: 2 },
+    configDef: [
+      { key: 'levels', kind: 'stepper', label: 'Levels', min: 1, max: 4 }
+    ]
+  },
+  {
+    id: 'shadow', label: 'Shadow', type: 'shadow',
+    defaults: { levels: 3, colored: false },
+    configDef: [
+      { key: 'levels', kind: 'stepper', label: 'Levels', min: 1, max: 6 },
+      { key: 'colored', kind: 'check', label: 'colored' }
+    ]
+  },
+  {
+    id: 'overlay', label: 'Overlay', type: 'bg-only',
+    defaults: { levels: 1 },
+    configDef: [
+      { key: 'levels', kind: 'stepper', label: 'Levels', min: 1, max: 4 }
+    ]
+  },
+  {
+    id: 'skeleton', label: 'Skeleton', type: 'skeleton',
+    defaults: {},
+    configDef: []
+  },
+  {
+    id: 'interactive', label: 'Interactive', type: 'layered',
+    defaults: { levels: 1, hovered: true, pressed: true, selected: true, inverse: true },
+    configDef: [
+      { key: 'levels', kind: 'stepper', label: 'Levels', min: 1, max: 6 },
+      { key: 'inverse', kind: 'check', label: 'inverse' },
+      { key: 'hovered', kind: 'check', label: 'hover', group: 'States' },
+      { key: 'pressed', kind: 'check', label: 'pressed', group: 'States' },
+      { key: 'selected', kind: 'check', label: 'selected', group: 'States' }
+    ]
+  },
+  {
+    id: 'support', label: 'Support', type: 'support',
+    defaults: { error: true, success: true, warning: true, info: true, caution: false, inverse: true },
+    configDef: [
+      { key: 'error', kind: 'check', label: 'error' },
+      { key: 'success', kind: 'check', label: 'success' },
+      { key: 'warning', kind: 'check', label: 'warning' },
+      { key: 'info', kind: 'check', label: 'info' },
+      { key: 'caution', kind: 'check', label: 'caution' },
+      { key: 'inverse', kind: 'check', label: 'inverse' }
+    ]
+  },
+  {
+    id: 'focus', label: 'Focus', type: 'focus',
+    defaults: { levels: 1, inset: true, inverse: true },
+    configDef: [
+      { key: 'levels', kind: 'stepper', label: 'Levels', min: 1, max: 4 },
+      { key: 'inset', kind: 'check', label: 'inset' },
+      { key: 'inverse', kind: 'check', label: 'inverse' }
+    ]
+  },
+  {
+    id: 'gradient', label: 'Gradient', type: 'gradient',
+    defaults: { groups: [{ stops: 2 }] },
+    configDef: []
+  }
+];
+
+// ────────────────────────────────────────────────────
+// State
+// ────────────────────────────────────────────────────
+
+var nextModeId = 2;
+var state = {
+  version: CONFIG_VERSION,
+  collectionName: 'color usage',
+  modes: [{ id: 1, name: 'mode-01', enabled: true }],
+  groups: {}
+};
+
+document.getElementById('collectionName').addEventListener('input', function(e) {
+  state.collectionName = e.target.value;
+  saveConfig();
+});
+
+// Init group state from defaults
+GROUP_DEFS.forEach(function(g) {
+  state.groups[g.id] = {
+    enabled: CORE_GROUPS.indexOf(g.id) !== -1,
+    ...JSON.parse(JSON.stringify(g.defaults))
+  };
+});
+
+// ────────────────────────────────────────────────────
+// Token Generation
+// ────────────────────────────────────────────────────
+
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function getTokensForGroup(id) {
+  var cfg = state.groups[id];
+  if (!cfg || !cfg.enabled) return [];
+  var tokens = [];
+  var push = function(name, cat) { tokens.push({ name: id + '/' + name, cat: cat }); };
+
+  switch (id) {
+    case 'background':
+      push('01', 'base');
+      if (cfg.hovered) push('01-hover', 'state');
+      if (cfg.pressed) push('01-pressed', 'state');
+      if (cfg.selected) push('01-selected', 'state');
+      if (cfg.inverse) push('inverse', 'special');
+      break;
+
+    case 'surface':
+      if (cfg.bg) push('bg', 'special');
+      for (var i = 1; i <= cfg.levels; i++) {
+        push(pad(i), 'base');
+        if (cfg.hovered) push(pad(i) + '-hover', 'state');
+        if (cfg.pressed) push(pad(i) + '-pressed', 'state');
+        if (cfg.selected) push(pad(i) + '-selected', 'state');
+        if (cfg.disabled) push(pad(i) + '-disabled', 'state');
+      }
+      if (cfg.inverse) push('inverse', 'special');
+      break;
+
+    case 'surface-accent':
+      for (var i = 1; i <= cfg.levels; i++) push(pad(i), 'base');
+      break;
+
+    case 'field':
+    case 'interactive':
+      for (var i = 1; i <= cfg.levels; i++) {
+        push(pad(i), 'base');
+        if (cfg.hovered) push(pad(i) + '-hover', 'state');
+        if (cfg.pressed) push(pad(i) + '-pressed', 'state');
+        if (cfg.selected) push(pad(i) + '-selected', 'state');
+        if (cfg.disabled) push(pad(i) + '-disabled', 'state');
+      }
+      if (cfg.inverse) push('inverse', 'special');
+      break;
+
+    case 'border':
+      for (var i = 1; i <= cfg.levels; i++) {
+        push(pad(i), 'base');
+        if (cfg.hovered) push(pad(i) + '-hover', 'state');
+        if (cfg.pressed) push(pad(i) + '-pressed', 'state');
+        if (cfg.disabled) push(pad(i) + '-disabled', 'state');
+      }
+      if (cfg.interactive) push('interactive', 'special');
+      if (cfg.borderDisabled) push('disabled', 'special');
+      break;
+
+    case 'divider':
+    case 'overlay':
+      for (var i = 1; i <= cfg.levels; i++) push(pad(i), 'base');
+      break;
+
+    case 'shadow':
+      for (var i = 1; i <= cfg.levels; i++) push(pad(i), 'base');
+      if (cfg.colored) push('colored', 'special');
+      break;
+
+    case 'skeleton':
+      push('bg', 'base');
+      push('element', 'base');
+      break;
+
+    case 'gradient':
+      (cfg.groups || []).forEach(function(g, idx) {
+        var n = pad(idx + 1);
+        push(n + '-from', 'base');
+        if (g.stops >= 3) push(n + '-via', 'base');
+        if (g.stops >= 4) {
+          tokens.pop();
+          push(n + '-via-01', 'base');
+          push(n + '-via-02', 'base');
+        }
+        push(n + '-to', 'base');
+      });
+      break;
+
+    case 'text':
+      for (var i = 1; i <= cfg.levels; i++) push(pad(i), 'base');
+      if (cfg.onColor) {
+        push('on-color', 'special');
+        push('on-color-disabled', 'special');
+      }
+      if (cfg.placeholder) push('placeholder', 'special');
+      if (cfg.disable) push('disable', 'special');
+      if (cfg.inverse) push('inverse', 'special');
+      if (cfg.semantic) {
+        push('error', 'special');
+        push('success', 'special');
+        push('warning', 'special');
+      }
+      break;
+
+    case 'link':
+      for (var i = 1; i <= cfg.levels; i++) {
+        push(pad(i), 'base');
+        if (cfg.hovered) push(pad(i) + '-hover', 'state');
+        if (cfg.active) push(pad(i) + '-active', 'state');
+        if (cfg.visited) push(pad(i) + '-visited', 'state');
+      }
+      if (cfg.inverse) push('inverse', 'special');
+      break;
+
+    case 'icon':
+      for (var i = 1; i <= cfg.levels; i++) push(pad(i), 'base');
+      if (cfg.onColor) push('on-color', 'special');
+      if (cfg.interactive) push('interactive', 'special');
+      if (cfg.inverse) push('inverse', 'special');
+      if (cfg.disable) push('disable', 'special');
+      break;
+
+    case 'button':
+      for (var i = 1; i <= cfg.levels; i++) {
+        push(pad(i), 'base');
+        if (cfg.hovered) push(pad(i) + '-hover', 'state');
+        if (cfg.pressed) push(pad(i) + '-pressed', 'state');
+      }
+      if (cfg.disabled) push('disabled', 'special');
+      if (cfg.ghost) {
+        push('ghost', 'special');
+        if (cfg.hovered) push('ghost-hover', 'state');
+        if (cfg.pressed) push('ghost-pressed', 'state');
+      }
+      break;
+
+    case 'support':
+      var items = ['error','success','warning','info','caution'];
+      for (var j = 0; j < items.length; j++) {
+        if (cfg[items[j]]) {
+          push(items[j], 'base');
+          if (cfg.inverse) push(items[j] + '-inverse', 'special');
+        }
+      }
+      break;
+
+    case 'focus':
+      for (var i = 1; i <= cfg.levels; i++) push(pad(i), 'base');
+      if (cfg.inset) push('inset', 'special');
+      if (cfg.inverse) push('inverse', 'special');
+      break;
+  }
+  return tokens;
+}
+
+function getAllTokens() {
+  var all = [];
+  GROUP_DEFS.forEach(function(g) {
+    var t = getTokensForGroup(g.id);
+    for (var i = 0; i < t.length; i++) all.push(t[i]);
+  });
+  return all;
+}
+
+// ────────────────────────────────────────────────────
+// Rendering — Modes
+// ────────────────────────────────────────────────────
+
+function renderModes() {
+  var el = document.getElementById('modesList');
+  el.innerHTML = '';
+  state.modes.forEach(function(m) {
+    var chip = document.createElement('div');
+    chip.className = 'mode-chip';
+    var inp = document.createElement('input');
+    inp.className = 'mode-name';
+    inp.type = 'text';
+    inp.value = m.name;
+    inp.addEventListener('change', function() {
+      m.name = inp.value.trim() || m.name;
+      inp.value = m.name;
+      saveConfig();
+    });
+    inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') inp.blur(); });
+    chip.appendChild(inp);
+
+    if (state.modes.length > 1) {
+      var rm = document.createElement('button');
+      rm.className = 'mode-remove';
+      rm.textContent = '\u00d7';
+      rm.addEventListener('click', function() {
+        state.modes = state.modes.filter(function(x) { return x.id !== m.id; });
+        renderModes();
+        saveConfig();
+      });
+      chip.appendChild(rm);
+    }
+    el.appendChild(chip);
+  });
+
+  var addBtn = document.createElement('button');
+  addBtn.className = 'mode-add';
+  addBtn.textContent = '+';
+  addBtn.addEventListener('click', function() {
+    var id = nextModeId++;
+    state.modes.push({ id: id, name: 'mode-' + String(id).padStart(2, '0'), enabled: true });
+    renderModes();
+    saveConfig();
+  });
+  el.appendChild(addBtn);
+}
+
+// ────────────────────────────────────────────────────
+// Rendering — Left Panel Groups
+// ────────────────────────────────────────────────────
+
+function renderGroups() {
+  var container = document.getElementById('groupList');
+  container.innerHTML = '';
+
+  GROUP_DEFS.forEach(function(def) {
+    var cfg = state.groups[def.id];
+    var tokens = getTokensForGroup(def.id);
+    var item = document.createElement('div');
+    item.className = 'group-item';
+
+    // Header
+    var header = document.createElement('div');
+    header.className = 'group-header';
+
+    var cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = cfg.enabled;
+    cb.addEventListener('change', function() {
+      cfg.enabled = cb.checked;
+      renderGroups();
+      renderPreview();
+      saveConfig();
+    });
+
+    var name = document.createElement('span');
+    name.className = 'group-name';
+    name.textContent = def.label;
+
+    var count = document.createElement('span');
+    count.className = 'group-token-count';
+    count.id = 'count-' + def.id;
+    count.textContent = cfg.enabled ? tokens.length : '';
+
+    var expandBtn = document.createElement('button');
+    expandBtn.className = 'expand-btn';
+    expandBtn.textContent = '\u25b8';
+
+    header.appendChild(cb);
+    header.appendChild(name);
+    header.appendChild(count);
+    header.appendChild(expandBtn);
+    item.appendChild(header);
+
+    // Config panel
+    var configPanel = document.createElement('div');
+    configPanel.className = 'group-config';
+
+    if (def.type === 'skeleton') {
+      var note = document.createElement('div');
+      note.style.cssText = 'font-size:10px;color:var(--text-secondary);';
+      note.textContent = 'Fixed: skeleton/bg + skeleton/element';
+      configPanel.appendChild(note);
+    } else if (def.type === 'gradient') {
+      renderGradientConfig(configPanel, cfg);
+    } else {
+      var currentGroup = null;
+      var currentRow = null;
+
+      def.configDef.forEach(function(cd) {
+        if (cd.group && cd.group !== currentGroup) {
+          currentGroup = cd.group;
+          // Label on its own row
+          var lblRow = document.createElement('div');
+          lblRow.className = 'config-row';
+          var lbl = document.createElement('span');
+          lbl.className = 'config-label';
+          lbl.textContent = cd.group;
+          lblRow.appendChild(lbl);
+          configPanel.appendChild(lblRow);
+          // Checkboxes on a new row below
+          currentRow = document.createElement('div');
+          currentRow.className = 'config-row config-row-indent';
+          configPanel.appendChild(currentRow);
+        }
+        if (!cd.group) {
+          currentGroup = null;
+          currentRow = document.createElement('div');
+          currentRow.className = 'config-row';
+          configPanel.appendChild(currentRow);
+        }
+
+        var row = currentRow || document.createElement('div');
+        if (!currentRow) {
+          row.className = 'config-row';
+          configPanel.appendChild(row);
+        }
+
+        if (cd.kind === 'stepper') {
+          var lbl = document.createElement('span');
+          lbl.className = 'config-label';
+          lbl.textContent = cd.label;
+          var stepper = document.createElement('div');
+          stepper.className = 'stepper';
+
+          var dec = document.createElement('button');
+          dec.textContent = '\u2212';
+          var val = document.createElement('span');
+          val.className = 'stepper-val';
+          val.textContent = cfg[cd.key];
+          var inc = document.createElement('button');
+          inc.textContent = '+';
+
+          (function(cdKey, cdMin, cdMax, valEl) {
+            dec.addEventListener('click', function() {
+              if (cfg[cdKey] > cdMin) { cfg[cdKey]--; valEl.textContent = cfg[cdKey]; onConfigChange(def.id); }
+            });
+            inc.addEventListener('click', function() {
+              if (cfg[cdKey] < cdMax) { cfg[cdKey]++; valEl.textContent = cfg[cdKey]; onConfigChange(def.id); }
+            });
+          })(cd.key, cd.min, cd.max, val);
+
+          stepper.appendChild(dec);
+          stepper.appendChild(val);
+          stepper.appendChild(inc);
+          row.appendChild(lbl);
+          row.appendChild(stepper);
+        } else if (cd.kind === 'check') {
+          var label = document.createElement('label');
+          label.className = 'config-check';
+          var chk = document.createElement('input');
+          chk.type = 'checkbox';
+          chk.checked = !!cfg[cd.key];
+          (function(cdKey) {
+            chk.addEventListener('change', function() {
+              cfg[cdKey] = chk.checked;
+              onConfigChange(def.id);
+            });
+          })(cd.key);
+          label.appendChild(chk);
+          label.appendChild(document.createTextNode(' ' + cd.label));
+          row.appendChild(label);
+        }
+      });
+    }
+
+    item.appendChild(configPanel);
+
+    // Expand toggle
+    var expanded = false;
+    header.addEventListener('click', function(e) {
+      if (e.target === cb || e.target.tagName === 'INPUT') return;
+      if (!cfg.enabled) {
+        cfg.enabled = true;
+        cb.checked = true;
+        expanded = true;
+        var countEl = document.getElementById('count-' + def.id);
+        if (countEl) {
+          countEl.textContent = getTokensForGroup(def.id).length;
+        }
+        updateTotalCount();
+        renderPreview();
+        saveConfig();
+      } else {
+        expanded = !expanded;
+      }
+      expandBtn.classList.toggle('open', expanded);
+      configPanel.classList.toggle('open', expanded);
+      // Scroll preview to this group
+      if (expanded) {
+        setTimeout(function() {
+          var target = document.getElementById('preview-group-' + def.id);
+          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 50);
+      }
+    });
+
+    container.appendChild(item);
+  });
+
+  updateTotalCount();
+}
+
+// ────────────────────────────────────────────────────
+// Rendering — Right Panel Preview
+// ────────────────────────────────────────────────────
+
+function renderPreview() {
+  var panel = document.getElementById('previewPanel');
+  panel.innerHTML = '';
+
+  var hasAny = false;
+  GROUP_DEFS.forEach(function(def) {
+    var tokens = getTokensForGroup(def.id);
+    if (tokens.length === 0) return;
+    hasAny = true;
+
+    var group = document.createElement('div');
+    group.className = 'preview-group';
+    group.id = 'preview-group-' + def.id;
+
+    var label = document.createElement('div');
+    label.className = 'preview-group-label';
+    label.textContent = def.label;
+    group.appendChild(label);
+
+    var list = document.createElement('div');
+    list.className = 'preview-tokens';
+    tokens.forEach(function(t) {
+      var tag = document.createElement('div');
+      tag.className = 'token-tag';
+      tag.innerHTML = '<span class="token-dot ' + t.cat + '"></span>' + t.name;
+      list.appendChild(tag);
+    });
+    group.appendChild(list);
+    panel.appendChild(group);
+  });
+
+  if (!hasAny) {
+    var empty = document.createElement('div');
+    empty.className = 'preview-empty';
+    empty.textContent = 'Select groups on the left to preview tokens';
+    panel.appendChild(empty);
+  }
+}
+
+// ────────────────────────────────────────────────────
+// Gradient Config
+// ────────────────────────────────────────────────────
+
+function renderGradientConfig(panel, cfg) {
+  var row1 = document.createElement('div');
+  row1.className = 'config-row';
+  var lbl = document.createElement('span');
+  lbl.className = 'config-label';
+  lbl.textContent = 'Groups';
+  var stepper = document.createElement('div');
+  stepper.className = 'stepper';
+  var dec = document.createElement('button');
+  dec.textContent = '\u2212';
+  var val = document.createElement('span');
+  val.className = 'stepper-val';
+  val.textContent = cfg.groups.length;
+  var inc = document.createElement('button');
+  inc.textContent = '+';
+  dec.addEventListener('click', function() {
+    if (cfg.groups.length > 1) {
+      cfg.groups.pop();
+      val.textContent = cfg.groups.length;
+      renderGradientRows(rowsEl, cfg);
+      onConfigChange('gradient');
+    }
+  });
+  inc.addEventListener('click', function() {
+    if (cfg.groups.length < 8) {
+      cfg.groups.push({ stops: 2 });
+      val.textContent = cfg.groups.length;
+      renderGradientRows(rowsEl, cfg);
+      onConfigChange('gradient');
+    }
+  });
+  stepper.appendChild(dec);
+  stepper.appendChild(val);
+  stepper.appendChild(inc);
+  row1.appendChild(lbl);
+  row1.appendChild(stepper);
+  panel.appendChild(row1);
+
+  var rowsEl = document.createElement('div');
+  rowsEl.className = 'gradient-rows';
+  renderGradientRows(rowsEl, cfg);
+  panel.appendChild(rowsEl);
+}
+
+function renderGradientRows(container, cfg) {
+  container.innerHTML = '';
+  cfg.groups.forEach(function(g, i) {
+    var row = document.createElement('div');
+    row.className = 'gradient-row';
+    var label = document.createElement('span');
+    label.textContent = 'gradient/' + pad(i + 1);
+    label.style.fontFamily = "'SF Mono','Fira Code','Menlo',monospace";
+    var sel = document.createElement('select');
+    [2,3,4].forEach(function(n) {
+      var opt = document.createElement('option');
+      opt.value = n; opt.textContent = n + ' stops';
+      if (g.stops === n) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener('change', function() {
+      g.stops = parseInt(sel.value);
+      onConfigChange('gradient');
+    });
+    row.appendChild(label);
+    row.appendChild(sel);
+    container.appendChild(row);
+  });
+}
+
+// ────────────────────────────────────────────────────
+// Persist Config
+// ────────────────────────────────────────────────────
+
+function saveConfig() {
+  parent.postMessage({ pluginMessage: {
+    type: 'save-config',
+    config: JSON.parse(JSON.stringify(state))
+  }}, '*');
+}
+
+// ────────────────────────────────────────────────────
+// Config Change Handler
+// ────────────────────────────────────────────────────
+
+function onConfigChange(groupId) {
+  var countEl = document.getElementById('count-' + groupId);
+  if (countEl) {
+    var cfg = state.groups[groupId];
+    var tokens = getTokensForGroup(groupId);
+    countEl.textContent = cfg.enabled ? tokens.length : '';
+  }
+  updateTotalCount();
+  renderPreview();
+  saveConfig();
+  setTimeout(function() {
+    var target = document.getElementById('preview-group-' + groupId);
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 50);
+}
+
+function updateTotalCount() {
+  var total = getAllTokens().length;
+  document.getElementById('totalCount').textContent = total + ' token' + (total !== 1 ? 's' : '');
+}
+
+// ────────────────────────────────────────────────────
+// Shortcuts
+// ────────────────────────────────────────────────────
+
+document.getElementById('btnAll').addEventListener('click', function() {
+  GROUP_DEFS.forEach(function(g) { state.groups[g.id].enabled = true; });
+  renderGroups();
+  renderPreview();
+  saveConfig();
+});
+
+document.getElementById('btnNone').addEventListener('click', function() {
+  GROUP_DEFS.forEach(function(g) { state.groups[g.id].enabled = false; });
+  renderGroups();
+  renderPreview();
+  saveConfig();
+});
+
+document.getElementById('btnCore').addEventListener('click', function() {
+  GROUP_DEFS.forEach(function(g) {
+    state.groups[g.id].enabled = CORE_GROUPS.indexOf(g.id) !== -1;
+  });
+  renderGroups();
+  renderPreview();
+  saveConfig();
+});
+
+// ────────────────────────────────────────────────────
+// JSON Modal
+// ────────────────────────────────────────────────────
+
+document.getElementById('btnJson').addEventListener('click', function() {
+  var tokens = getAllTokens();
+  var json = {
+    collection: state.collectionName.trim() || 'color usage',
+    modes: state.modes.map(function(m) { return m.name; }),
+    variables: tokens.map(function(t) { return { name: t.name, type: 'COLOR' }; })
+  };
+  document.getElementById('jsonContent').textContent = JSON.stringify(json, null, 2);
+  document.getElementById('jsonModal').classList.add('open');
+});
+
+document.getElementById('jsonClose').addEventListener('click', closeModal);
+document.getElementById('jsonCloseBtn').addEventListener('click', closeModal);
+document.getElementById('jsonModal').addEventListener('click', function(e) {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+function closeModal() {
+  document.getElementById('jsonModal').classList.remove('open');
+}
+
+document.getElementById('btnCopy').addEventListener('click', function() {
+  var text = document.getElementById('jsonContent').textContent;
+  navigator.clipboard.writeText(text).then(function() { showToast('Copied to clipboard', false); });
+});
+
+// ────────────────────────────────────────────────────
+// Sync to Figma
+// ────────────────────────────────────────────────────
+
+document.getElementById('btnSync').addEventListener('click', function() {
+  var tokens = getAllTokens();
+  if (tokens.length === 0) {
+    showToast('No tokens to sync', true);
+    return;
+  }
+
+  var payload = {
+    groups: [],
+    modes: state.modes.map(function(m) { return m.name; })
+  };
+
+  GROUP_DEFS.forEach(function(def) {
+    var cfg = state.groups[def.id];
+    if (!cfg.enabled) return;
+    var groupTokens = getTokensForGroup(def.id);
+    payload.groups.push({
+      id: def.id,
+      tokens: groupTokens.map(function(t) { return { name: t.name, type: 'COLOR' }; })
+    });
+  });
+
+  parent.postMessage({ pluginMessage: {
+    type: 'sync-tokens',
+    payload: payload,
+    collectionName: state.collectionName.trim() || 'color usage',
+    config: JSON.parse(JSON.stringify(state))
+  }}, '*');
+
+  document.getElementById('btnSync').disabled = true;
+  document.getElementById('btnSync').textContent = 'Syncing...';
+});
+
+// ────────────────────────────────────────────────────
+// Messages from Main
+// ────────────────────────────────────────────────────
+
+onmessage = function(e) {
+  var msg = e.data.pluginMessage;
+  if (!msg) return;
+
+  if (msg.type === 'sync-complete') {
+    showToast('Collection "' + msg.collectionName + '" created!', false);
+    resetSyncBtn();
+  }
+  if (msg.type === 'sync-error') {
+    showToast(msg.message, true);
+    resetSyncBtn();
+  }
+  if (msg.type === 'config-loaded') {
+    if (msg.config) {
+      var savedVersion = msg.config.version || 0;
+      Object.assign(state, msg.config);
+      state.version = CONFIG_VERSION;
+      // Migrate mask -> overlay
+      if (state.groups['mask'] && !state.groups['overlay']) {
+        state.groups['overlay'] = state.groups['mask'];
+        delete state.groups['mask'];
+      }
+      // On version mismatch: reset group configs to new defaults, keep only enabled state
+      if (savedVersion < CONFIG_VERSION) {
+        GROUP_DEFS.forEach(function(g) {
+          var wasEnabled = state.groups[g.id] ? state.groups[g.id].enabled : false;
+          state.groups[g.id] = {
+            enabled: wasEnabled,
+            ...JSON.parse(JSON.stringify(g.defaults))
+          };
+        });
+        saveConfig();
+      } else {
+        // Same version: ensure all groups exist, sync keys
+        GROUP_DEFS.forEach(function(g) {
+          if (!state.groups[g.id]) {
+            state.groups[g.id] = {
+              enabled: false,
+              ...JSON.parse(JSON.stringify(g.defaults))
+            };
+          } else {
+            var defs = JSON.parse(JSON.stringify(g.defaults));
+            for (var k in defs) {
+              if (!(k in state.groups[g.id])) {
+                state.groups[g.id][k] = defs[k];
+              }
+            }
+            var validKeys = { enabled: true };
+            for (var k in defs) { validKeys[k] = true; }
+            for (var k in state.groups[g.id]) {
+              if (!(k in validKeys)) {
+                delete state.groups[g.id][k];
+              }
+            }
+          }
+        });
+      }
+      if (state.collectionName) {
+        document.getElementById('collectionName').value = state.collectionName;
+      }
+      nextModeId = Math.max.apply(null, state.modes.map(function(m) { return m.id; })) + 1;
+      renderModes();
+      renderGroups();
+      renderPreview();
+    }
+  }
+};
+
+function resetSyncBtn() {
+  var btn = document.getElementById('btnSync');
+  btn.disabled = false;
+  btn.textContent = 'Sync to Figma';
+}
+
+// ────────────────────────────────────────────────────
+// Toast
+// ────────────────────────────────────────────────────
+
+var toastTimer;
+function showToast(text, isError) {
+  var el = document.getElementById('toast');
+  el.textContent = text;
+  el.className = 'toast ' + (isError ? 'error' : 'success');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { el.className = 'toast'; }, 3500);
+}
+
+// ────────────────────────────────────────────────────
+// Init
+// ────────────────────────────────────────────────────
+
+renderModes();
+renderGroups();
+renderPreview();
+
+parent.postMessage({ pluginMessage: { type: 'load-config' }}, '*');
+
+</script>
+</body>
+</html>
