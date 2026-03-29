@@ -63,7 +63,7 @@ This plugin is actively maintained. If you run into anything or have ideas, I'd 
 
 **Ways to reach out:**
 - [Open an issue on GitHub](https://github.com/kermityen/token-setup/issues) — bug reports, feature requests, naming suggestions
-- [Quick feedback form](https://forms.gle/YOUR_FORM_ID) — takes 1 minute, no GitHub account needed
+- [Quick feedback form](https://docs.google.com/forms/d/e/1FAIpQLSfz_Xh2Zu4Lcx0RBbQgAPUy0MWyCmVFK42AdD_LjM1QYq9wQg/viewform)
 
 **Helpful things to include:**
 - What token groups you selected
