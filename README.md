@@ -59,8 +59,16 @@ Fill in your brand colors after syncing.
 
 ## Feedback
 
-Found a bug or have a suggestion?
-[Open an issue on GitHub](https://github.com/kermityen/token-setup/issues)
+This plugin is actively maintained. If you run into anything or have ideas, I'd love to hear from you.
+
+**Ways to reach out:**
+- [Open an issue on GitHub](https://github.com/kermityen/token-setup/issues) — bug reports, feature requests, naming suggestions
+- [Quick feedback form](https://forms.gle/YOUR_FORM_ID) — takes 1 minute, no GitHub account needed
+
+**Helpful things to include:**
+- What token groups you selected
+- What you expected vs. what happened
+- Screenshot if something looks off
 
 ## License
 
