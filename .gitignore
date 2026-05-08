@@ -1,2 +1,7 @@
 node_modules/
 dist/
+.DS_Store
+
+# Internal-only docs (not for public repo)
+ROADMAP.md
+notes/
